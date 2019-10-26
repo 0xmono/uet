@@ -3,8 +3,8 @@ import sys
 import logging
 import platform
 import win32api, win32con
-from ue.platform_base import UePlatformBase
-from ue import path as ue_path
+import ue
+from .base import UePlatformBase
 
 INSTALLATION_SUB_KEY = "SOFTWARE\\Epic Games\\Unreal Engine\\Builds"
 EXE_EXTENSION = ".exe"
@@ -36,7 +36,7 @@ class UePlatformWindows(UePlatformBase):
                     logging.debug(str(name))
                     if name and value:
                         installLocation = os.path.normpath(value)
-                        if ue_path.is_valid_engine_root_directory(installLocation):
+                        if ue.path.engine.is_valid_root_path(installLocation):
                             if installLocation in uniqueDirectories:
                                 logging.warning(installLocation + " is duplicated, name " + (name))
                             else:

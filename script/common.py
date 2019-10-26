@@ -1,11 +1,7 @@
-import re
 import os
 import sys
-from time import gmtime, strftime
 import subprocess as sp
-from argparse import ArgumentParser
 import logging
-import json
 
 ConfigExtension = ".cfg"
 LogExtension = ".log"

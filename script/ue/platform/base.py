@@ -1,7 +1,7 @@
 import os
 import logging
 import json
-from ue import path as ue_path
+import ue
 
 class UePlatformBase:
     def get_application_settings_path(self):
@@ -50,7 +50,7 @@ class UePlatformBase:
         
         for appName, installLocation in launcherInstallationList.items():
             if appName.startswith('UE_'):
-                if ue_path.is_valid_engine_root_directory(installLocation):
+                if ue.path.engine.is_valid_root_path(installLocation):
                     engineInstallations[appName[3:]] = installLocation
                 else:
                     logging.warning(installLocation + " is not a valid engine root directory")

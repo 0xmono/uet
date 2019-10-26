@@ -1,8 +1,8 @@
 import os
 import logging
 import configparser
-from ue.platform_base import UePlatformBase
-from ue import path as ue_path
+import ue
+from .base import UePlatformBase
 
 SH_EXTENSION = ".sh"
 EPIC_CONFIG_PATH = ".config/Epic/"
@@ -35,7 +35,7 @@ class UePlatformLinux(UePlatformBase):
             installationsSection = config[INSTALLATIONS_SECTION]
             for name in installationsSection:
                 installLocation = os.path.normpath(installationsSection[name])
-                if ue_path.is_valid_engine_root_directory(installLocation):
+                if ue.path.engine.is_valid_root_path(installLocation):
                     if installLocation in uniqueDirectories:
                         logging.warning(installLocation + " is duplicated, name " + (name))
                     else:

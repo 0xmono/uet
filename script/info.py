@@ -5,12 +5,8 @@ from time import gmtime, strftime
 import subprocess as sp
 from argparse import ArgumentParser
 import logging
-import json
 import common as cm
-from ue import path as ue_path
-from ue import project as ue_proj
-from ue import platform as pfm
-
+import ue
 
 class UnrealInfo:
     def run(self):
@@ -30,7 +26,7 @@ class UnrealInfo:
         logging.debug("Result is: " + str(parsedArgs))
 
     def info(self):
-        platformInterface = pfm.get_current_platform_interface()
+        platformInterface = ue.platform.get_current_platform_interface()
         if not platformInterface:
             logging.error("Platform interface is None")
             return

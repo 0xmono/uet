@@ -1,11 +1,11 @@
 import os
 import logging
-from ue import path as ue_path
-from ue.context_base import UeContextBase
+import ue
+from .base import UeContextBase
 
 class UeContextBuild(UeContextBase):
     def is_root_dir(somePath):
-        return ue_path.is_valid_build_root_directory(somePath)
+        return ue.path.build.is_valid_root_path(somePath)
 
     def get_root_path(somePath):
         return UeContextBuild._get_root_path(somePath, UeContextBuild.is_root_dir)
@@ -19,8 +19,8 @@ class UeContextBuild(UeContextBase):
         return "build"
 
     def inspect(self, settings):
-        buildName = ue_path.get_build_name_from_path(buildRootPath)
-        projectName, target = ue_proj.split_build_name(buildName)
+        buildName = ue.path.build.get_name_from_path(buildRootPath)
+        projectName, target = ue.project.split_build_name(buildName)
         logging.info("ProjectName: " + str(projectName))
         logging.info("Target: " + str(target))
 

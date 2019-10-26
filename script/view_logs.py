@@ -6,8 +6,7 @@ import subprocess as sp
 from argparse import ArgumentParser
 import logging
 import common as cm
-from ue import path as ue_path
-from ue import project as ue_proj
+import ue
 
 cm.addParentDirToSysPath(__file__)
 import config as cfg
@@ -21,17 +20,17 @@ def get_log_path_from_dir(somePath):
     logFilePath = None
     projectName = None
     logsPath = None
-    projectRootPath = ue_path.get_project_root_path_from_path(somePath)
+    projectRootPath = ue.path.project.get_root_path_from_path(somePath)
     if projectRootPath:
-        logging.debug("Found UE project root directory, using it '" + projectRootPath + "'");
-        projectName = ue_path.get_project_name_from_path(projectRootPath)
-        logsPath = os.path.join(projectRootPath, ue_path.LOGS_PATH);
+        logging.debug("Found UE project root directory, using it '" + projectRootPath + "'")
+        projectName = ue.path.get_project_name_from_path(projectRootPath)
+        logsPath = os.path.join(projectRootPath, ue.path.LOGS_PATH)
     else:
-        buildRootPath = ue_path.get_build_root_path_from_path(somePath)
+        buildRootPath = ue.path.build.get_root_path_from_path(somePath)
         if buildRootPath:
-            logging.debug("Found UE build root directory, using it '" + buildRootPath + "'");
-            projectName = ue_proj.split_build_name(ue_path.get_build_name_from_path(buildRootPath))[0]
-            logsPath = os.path.join(buildRootPath, projectName, ue_path.LOGS_PATH);
+            logging.debug("Found UE build root directory, using it '" + buildRootPath + "'")
+            projectName = ue.project.split_build_name(ue.path.build.build.get_name_from_path(buildRootPath))[0]
+            logsPath = os.path.join(buildRootPath, projectName, ue.path.LOGS_PATH)
 
     if projectName is not None:
         logFileName = projectName + LOG_EXTENSION
@@ -55,10 +54,10 @@ def get_log_path(logPath):
 
     if logFilePath is None:
         if dirPath is not None:
-            logging.debug("Trying to deduce log file from directory'" + dirPath + "'");
+            logging.debug("Trying to deduce log file from directory'" + dirPath + "'")
         else:
             dirPath = os.getcwd();
-            logging.debug("Source path is invalid, trying to deduce log file from script location'" + dirPath + "'");
+            logging.debug("Source path is invalid, trying to deduce log file from script location'" + dirPath + "'")
         logFilePath = get_log_path_from_dir(dirPath)
 
     if logFilePath is not None:

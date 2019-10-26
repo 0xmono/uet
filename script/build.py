@@ -5,10 +5,8 @@ from time import gmtime, strftime
 import subprocess as sp
 from argparse import ArgumentParser
 import logging
-import json
 import common as cm
-from ue import path as ue_path
-from ue import project as ue_proj
+import ue
 
 DEFAULT_TARGET = "Editor"
 DEFAULT_CONFIG = "Development"
@@ -46,17 +44,17 @@ class ProjectBuilder:
     def init(self):
         sourceArg, targetArg, configArg, platformArg = self.process_args()
         logging.debug("Input SourcePath: " + str(sourceArg))
-        sourcePath = ue_path.get_project_root_path_from_path(sourceArg)
+        sourcePath = ue.path.project.get_root_path_from_path(sourceArg)
         logging.debug("Actual SourcePath: " + str(sourcePath))
 
         if os.path.isdir(sourcePath):
-            projectFilePath = ue_path.get_project_file_path_from_repo_path(sourcePath)
+            projectFilePath = ue.path.get_project_file_path(sourcePath)
             logging.debug("ProjectFilePath: " + str(projectFilePath))
             if projectFilePath and os.path.isfile(projectFilePath):
-                enginePath = ue_path.get_engine_root_path(projectFilePath)
+                enginePath = ue.project.get_engine_root_path(projectFilePath)
                 logging.debug("EnginePath: " + str(enginePath))
                 if enginePath and os.path.isdir(enginePath):
-                    buildFilePath = os.path.normpath(os.path.join(enginePath, ue_path.get_relative_build_file_path()))
+                    buildFilePath = os.path.normpath(os.path.join(enginePath, ue.path.get_relative_build_file_path()))
                     logging.debug("BuildFilePath: " + str(buildFilePath))
                     if buildFilePath and os.path.isfile(buildFilePath):
                         return buildFilePath, projectFilePath, targetArg, configArg, platformArg
@@ -81,9 +79,9 @@ class ProjectBuilder:
                             help="targets[s] to build. Use inspect script to find available targets. Use 'all' to build all available targets.", 
                             metavar="TARGET")
         parser.add_argument("-c", "--config", dest="config", nargs='+', default = DEFAULT_CONFIG,
-                            help=("configuration type from " + str(ue_proj.ALL_CONFIGURATIONS)), metavar="CONFIG")
+                            help=("configuration type from " + str(ue.project.ALL_CONFIGURATIONS)), metavar="CONFIG")
         parser.add_argument("-p", "--platform", dest="platform", nargs='+', default = DEFAULT_PLATFORM,
-                            help=("platform type from " + str(ue_proj.ALL_PLATFORMS)), metavar="PLATFORM")
+                            help=("platform type from " + str(ue.project.ALL_PLATFORMS)), metavar="PLATFORM")
         parser.add_argument("-def", "--definitions", dest="definitions", nargs='+',
                             help="Definition for compiler.", 
                             metavar="DEFINITIONS")
@@ -109,24 +107,24 @@ class ProjectBuilder:
         return parsedArgs.source, parsedArgs.target, parsedArgs.config, parsedArgs.platform
 
     def get_target_arg(projectName, target):
-        targetArg = ue_proj.create_build_name(projectName, target)
+        targetArg = ue.project.create_build_name(projectName, target)
         logging.debug("Target arg: " + str(targetArg))
         return targetArg
 
     def run_build(self, buildFilePath, projectFilePath, targetArg, configArg, platformArg):
         logging.debug("Run build: " + str([buildFilePath, projectFilePath, targetArg, configArg, platformArg, self.onlyDebug]))
-        projectName = ue_path.get_project_name_from_project_file_path(projectFilePath)
+        projectName = ue.path.get_project_name_from_project_file_path(projectFilePath)
         projectPath = os.path.dirname(projectFilePath)
 
-        targets = get_real_arg_values_list(targetArg, ue_proj.get_build_targets(projectPath), "target")
+        targets = get_real_arg_values_list(targetArg, ue.project.get_build_targets(projectPath), "target")
         if not targets:
             return
 
-        configurations = get_real_arg_values_list(configArg, ue_proj.ALL_CONFIGURATIONS, "configuration")
+        configurations = get_real_arg_values_list(configArg, ue.project.ALL_CONFIGURATIONS, "configuration")
         if not configurations:
             return
 
-        platforms = get_real_arg_values_list(platformArg, ue_proj.ALL_PLATFORMS, "platform")
+        platforms = get_real_arg_values_list(platformArg, ue.project.ALL_PLATFORMS, "platform")
         if not platforms:
             return
 

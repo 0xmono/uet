@@ -4,10 +4,7 @@ import logging
 import platform
 import json
 import copy
-from ue import platform as pfm
-from ue import path as ue_path
-
-UPROJECT_EXTENSION = ".uproject"
+import ue
 
 ALL_TARGETS = ["Editor", "Game", "Client", "Server"]
 TARGET_BIULD_SUFFUX = {
@@ -50,86 +47,62 @@ def has_build_target(projectPath, buildTargetName):
     return (buildTargetName in buildTargets)
 
 def get_build_targets(projectPath):
-    projectName = ue_path.get_project_name_from_path(projectPath)
+    projectName = ue.path.project.get_project_name_from_path(projectPath)
     if projectName:
-        targetFiles = ue_path.get_project_target_files(projectPath)
+        targetFiles = ue.path.project.get_project_target_files(projectPath)
         logging.debug("Target files: " + str(targetFiles))
-        return [get_target_from_build_name(tf[:-len(ue_path.TARGET_FILE_ENDING)], projectName) for tf in targetFiles]
+        return [get_target_from_build_name(tf[:-len(ue.path.TARGET_FILE_ENDING)], projectName) for tf in targetFiles]
 
-def has_plugin(projectPath, pluginName):
-    plugins = get_project_plugins(projectPath, True)
-    return (pluginName in plugins)
-
-def is_plugin_enabled(projectPath, pluginName):
-    plugins = get_project_plugins(projectPath, False)
-    return (pluginName in plugins)
-
-def get_project_plugins(projectPath):
-    plugins = get_all_plugins(projectPath)
-    return filter_plugins_by_project_file(projectPath, plugins)
-
-def get_all_plugins(projectPath):
-    projectPlugins = ue_path.read_plugins_from_directory(ue_path.get_plugins_directory(projectPath))
-    enginePlugins = {}
-    projectFilePath = ue_path.get_project_file_path_from_repo_path(projectPath)
-
-    if projectFilePath and os.path.isfile(projectFilePath):
-        enginePluginsPath = ue_path.get_engine_plugins_path(projectFilePath)
-        enginePlugins = ue_path.read_plugins_from_directory(enginePluginsPath)
-        logging.debug("enginePlugins:" + str(enginePlugins))
-
+def get_plugins(projectFilePath):
     plugins = {}
-    
-    for pluginName in projectPlugins:
-        plugins[pluginName] = projectPlugins[pluginName]
-        # Project plugins are enabled by default
-        plugins[pluginName]['Enabled'] = True 
-        plugins[pluginName]['Source'] = 'Project'
-
-    for pluginName in enginePlugins:
-        if pluginName in plugins:
-             logging.warning("Duplicated plugin in project and in engine: " + str(pluginName))
-        else:
-            plugins[pluginName] = enginePlugins[pluginName]
-            plugins[pluginName]['Source'] = 'Engine'
-
-    return plugins
-
-def filter_plugins_by_project_file(projectPath, plugins):
-    localPlugins = copy.deepcopy(plugins)
-    projectFilePath = ue_path.get_project_file_path_from_repo_path(projectPath)
-    
     if projectFilePath and os.path.isfile(projectFilePath):
-        data = None
         with open(projectFilePath) as projectCfg:
             data = json.load(projectCfg)
-
-        if data is not None:
             if 'Plugins' in data:
                 for plugingData in data['Plugins']:
                     if 'Name' in plugingData:
                         pluginName = plugingData['Name']
-                        pluginInfo = localPlugins.get(pluginName)
+                        enabledInProjectFile = False
+                        if 'Enabled' in plugingData:
+                            if str(plugingData['Enabled']).lower() == 'true':
+                                enabledInProjectFile = True
+                            elif str(plugingData['Enabled']).lower() != 'false':
+                                logging.warning("Wrong status for plugin " + pluginName + " in " + projectFilePath)
+                        plugins[pluginName] = { 'Enabled' : enabledInProjectFile }
+                        logging.debug("Plugin " + pluginName + " enabled in project file: " + str(enabledInProjectFile))
+    return plugins
 
-                        if pluginInfo:
-                            pluginInfo['InProjectFile'] = True
 
-                            enabledInProjectFile = False
-                            if 'Enabled' in plugingData:
-                                if str(plugingData['Enabled']).lower() == 'true':
-                                    enabledInProjectFile = True
-                                elif str(plugingData['Enabled']).lower() != 'false':
-                                    logging.warning("Wrong status for plugin " + pluginName + " in " + projectFilePath)
+def update_plugins_by_project_file(projectFilePath, plugins):
+    projectFilePlugins = get_plugins(projectFilePath)
 
-                            logging.debug("Plugin " + pluginName + " enabled in project file: " + str(enabledInProjectFile))
-                            
-                            if pluginInfo['Source'] != 'Project' and enabledInProjectFile:
-                                pluginInfo['Enabled'] = True
-                                logging.debug("Setting enabled plugin " + pluginName)
-                            if pluginInfo['Source'] == 'Project' and not enabledInProjectFile:
-                                pluginInfo['Enabled'] = False
-                                logging.debug("Setting disabled plugin " + pluginName)
-                        else:
-                            logging.warning("Invalid plugin " + pluginName + " in " + projectFilePath)
-    
-    return localPlugins
+    for pluginName in projectFilePlugins:
+        pluginInfo = plugins.get(pluginName)
+        pluginDescr = projectFilePlugins[pluginName]
+        if pluginInfo:
+            pluginInfo['InProjectFile'] = True
+            
+            if not pluginInfo['Enabled'] and pluginDescr['Enabled']:
+                pluginInfo['Enabled'] = True
+                logging.debug("Setting enabled plugin " + pluginName)
+            if pluginInfo['Enabled'] and not pluginDescr['Enabled']:
+                pluginInfo['Enabled'] = False
+                logging.debug("Setting disabled plugin " + pluginName)
+        else:
+            logging.warning("Invalid plugin " + pluginName + " in " + projectFilePath)
+
+    return plugins
+
+def get_engine_id(projectFilePath):
+    #EngineAssociation": "4.20"
+    with open(projectFilePath) as projectCfg:
+        data = json.load(projectCfg)
+        if 'EngineAssociation' in data:
+            return data['EngineAssociation']
+
+def get_engine_root_path(projectFilePath):
+    #return "e:/projects/Unreal/4_20"
+    #return "e:/prog/Epic/UE_4.20"
+    engineId = get_engine_id(projectFilePath)
+    if engineId:
+        return ue.path.engine.get_root_path_from_identifier(engineId)

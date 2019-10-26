@@ -3,12 +3,12 @@ import sys
 import logging
 import platform
 
-def get_platform_interface(uePlatform):
-    if uePlatform  == 'Linux':
-        from ue.platform_linux import UePlatformLinux
+def get_platform_interface(platformName):
+    if platformName  == 'Linux':
+        from .linux import UePlatformLinux
         return UePlatformLinux()
-    elif uePlatform == 'Windows':
-        from ue.platform_windows import UePlatformWindows
+    elif platformName == 'Windows':
+        from .windows import UePlatformWindows
         return UePlatformWindows()
 
 def get_current_platform_interface():

@@ -5,12 +5,8 @@ from time import gmtime, strftime
 import subprocess as sp
 from argparse import ArgumentParser
 import logging
-import json
 import common as cm
-from ue import path as ue_path
-from ue import project as ue_proj
-from ue import context as ue_context
-
+import ue
 
 class Inspector:
     def run(self):
@@ -53,7 +49,7 @@ class Inspector:
         return parsedArgs.source, parsedArgs
 
     def inspect(self, sourcePath, settings):
-        context = ue_context.get_context_interface(sourcePath)
+        context = ue.context.get_context_interface(sourcePath)
         if context:
             context.inspect(settings)
         else:

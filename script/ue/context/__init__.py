@@ -1,10 +1,7 @@
-import os
-import sys
 import logging
-import platform
-from ue.context_project import UeContextProject
-from ue.context_build import UeContextBuild
-from ue.context_engine import UeContextEngine
+from .project import UeContextProject
+from .build import UeContextBuild
+from .engine import UeContextEngine
 
 def get_context_interface(somePath):
     context = UeContextProject.construct(somePath)
