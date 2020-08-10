@@ -20,7 +20,7 @@ Actually most of existing and planning commands are just wrappers around Unreal 
 ### Planning
 
 - Packaging.
-- Deploment.
+- Deployment.
 - Project configuration.
 - Testig.
 - Running PVS analyze.
@@ -59,3 +59,8 @@ Links
 -----
 
 * [Unreal Engine source on GitHub](https://github.com/EpicGames/UnrealEngine)
+
+License
+-----
+
+Copyright © 2018-2020, Vizor Games LLC. Licensed under the MIT License, see the file LICENSE for details.
