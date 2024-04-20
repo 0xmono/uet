@@ -1,4 +1,4 @@
 @echo off
 
 rem Inspect Unreal Engine project/build script
-python %~dp0\script\inspect.py %cd% %*
+python %~dp0\uet\inspect.py %cd% %*

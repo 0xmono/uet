@@ -11,4 +11,4 @@ echo %CurrPath% > user_path_bak.txt
 echo "!!!WARNING!!! your user PATH will be updated, backup saved to user_path_bak.txt"
 setx path "%CurrPath%";%~dp0
 
-python %~dp0\script\install_required_packages.py %*
+python %~dp0\uet\install_required_packages.py %*
