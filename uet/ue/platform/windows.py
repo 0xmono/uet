@@ -8,17 +8,12 @@ from .base import UePlatformBase
 
 INSTALLATION_SUB_KEY = "SOFTWARE\\Epic Games\\Unreal Engine\\Builds"
 EXE_EXTENSION = ".exe"
+EPIC_SETTINGS_PATH = "C:/ProgramData/Epic"
 RELATIVE_BUILD_FILE_PATH = "Engine/Build/BatchFiles/Build.bat"
 
 class UePlatformWindows(UePlatformBase):
-    def get_application_settings_path(self):
-        return os.path.normpath("C:/ProgramData/Epic")
-    
-    def get_launcher_settings_path(self):
-        return os.path.join(self.get_application_settings_path(), "UnrealEngineLauncher")
-
     def get_launcher_installations_file_path(self):
-        return os.path.join(self.get_launcher_settings_path(), "LauncherInstalled.dat")
+        return os.path.join(os.path.normpath(EPIC_SETTINGS_PATH), "UnrealEngineLauncher", "LauncherInstalled.dat")
 
     def get_source_engine_installations(self):
         engineInstallations = {}
@@ -55,7 +50,7 @@ class UePlatformWindows(UePlatformBase):
             if regKeyHandle is not None:
                 win32api.RegCloseKey(regKeyHandle)
                 #regKeyHandle.Close()
-        
+
         logging.debug("Source engine installations: " + str(engineInstallations))
         return engineInstallations
 

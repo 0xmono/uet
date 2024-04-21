@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 import logging
 import common as cm
 import ue
+from ue import platform as ue_pfm
 
 DEFAULT_TARGET = "Editor"
 DEFAULT_CONFIG = "Development"
@@ -27,10 +28,10 @@ def get_real_arg_values_list(argValue, allValue, dbgDescription):
             valuesList = allValue
         else:
             valuesList = [argValue]
-    
+
     if valuesList is None:
         logging.error("Wrong type " + str(dbgDescription) + " arg type: " + str(type(argValue)) + " " + str(argValue))
-    
+
     return valuesList
 
 
@@ -68,27 +69,29 @@ class ProjectBuilder:
             logging.warning("SourcePath is invalid: " + str(sourcePath))
 
     def process_args(self):
+        defaultBuildPlatform = ue_pfm.get_current_platform_interface().get_default_build_platform()
+
         parser = ArgumentParser()
         cm.init_arg_parser(parser)
-        parser.add_argument("shellsource", 
+        parser.add_argument("shellsource",
                             help="directory inside of UE project or build, set by calling shell", metavar="SHELL_SOURCE")
         parser.add_argument("-s", "--source", dest="source",
-                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument", 
+                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument",
                             metavar="SOURCE")
         parser.add_argument("-t", "--target", dest="target", nargs='+', default = DEFAULT_TARGET,
-                            help="targets[s] to build. Use inspect script to find available targets. Use 'all' to build all available targets.", 
+                            help="targets[s] to build. Use inspect script to find available targets. Use 'all' to build all available targets.",
                             metavar="TARGET")
         parser.add_argument("-c", "--config", dest="config", nargs='+', default = DEFAULT_CONFIG,
                             help=("configuration type from " + str(ue.project.ALL_CONFIGURATIONS)), metavar="CONFIG")
-        parser.add_argument("-p", "--platform", dest="platform", nargs='+', default = DEFAULT_PLATFORM,
+        parser.add_argument("-p", "--platform", dest="platform", nargs='+', default = defaultBuildPlatform,
                             help=("platform type from " + str(ue.project.ALL_PLATFORMS)), metavar="PLATFORM")
-        parser.add_argument("-def", "--definitions", dest="definitions", nargs='+',
-                            help="Definition for compiler.", 
+        parser.add_argument("-e", "--definitions", dest="definitions", nargs='+',
+                            help="Definition for compiler.",
                             metavar="DEFINITIONS")
-        parser.add_argument("-nu", "--nonunity",
+        parser.add_argument("-u", "--nonunity",
                             action="store_true", dest="nonUnity", default=False,
                             help="non-unity build")
-        parser.add_argument("-npch", "--noprecompiledheaders",
+        parser.add_argument("-i", "--noprecompiledheaders",
                             action="store_true", dest="noPrecompiledHeaders", default=False,
                             help="not use precompiled headers")
 

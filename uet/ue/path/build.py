@@ -1,23 +1,27 @@
 import os
 import logging
 import ue
+import ue.platform as ue_pfm
 from .common import *
 
 LOGS_DIR = "Saved/Logs"
 
 def is_build_exe_file(filePath, platform=None):
+    logging.debug(f"is_build_exe_file {filePath}")
     if not filePath:
         return False
 
     if platform:
         platformInterfaces = [platform]
     else:
-        platformInterfaces = list(ue.platform.get_all_platform_interfaces().values())
+        platformInterfaces = [ue_pfm.get_current_platform_interface()]
         if not platformInterfaces:
             logging.error("No platform interfaces")
             return False
 
-    return any(pi.is_build_exe_file(filePath) for pi in platformInterfaces)
+    isBuildExeFile = any(pi.is_build_exe_file(filePath) for pi in platformInterfaces)
+    logging.debug(f"is_build_exe_file {isBuildExeFile}")
+    return isBuildExeFile
 
 def get_name_from_path(somePath, platform=None):
     engineBinariesDir = os.path.normpath(os.path.join(somePath, 'Engine/Binaries'))

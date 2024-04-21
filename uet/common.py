@@ -6,7 +6,7 @@ import logging
 ConfigExtension = ".cfg"
 LogExtension = ".log"
 
-class ColorEscapeStrings: 
+class ColorEscapeStrings:
     RESET='\033[0m'
     BOLD='\033[01m'
     DISABLE='\033[02m'
@@ -14,7 +14,7 @@ class ColorEscapeStrings:
     REVERSE='\033[07m'
     STRIKE_THROUGH='\033[09m'
     INVISIBLE='\033[08m'
-    class ForeGround: 
+    class ForeGround:
         BLACK='\033[30m'
         RED='\033[31m'
         GREEN='\033[32m'
@@ -30,7 +30,7 @@ class ColorEscapeStrings:
         LIGHT_BLUE='\033[94m'
         PINK='\033[95m'
         LIGHT_CYAN='\033[96m'
-    class BackGround: 
+    class BackGround:
         BLACK='\033[40m'
         RED='\033[41m'
         GREEN='\033[42m'
@@ -44,17 +44,17 @@ def init_arg_parser(parser):
     parser.add_argument("-d", "--debug",
                         action="store_true", dest="debug", default=False,
                         help="debug or not debug")
-    parser.add_argument("-dd", "--onlydebug",
+    parser.add_argument("-D", "--onlydebug",
                         action="store_true", dest="onlyDebug", default=False,
                         help="is this only debug run with applying any changes")
-    parser.add_argument("-nc", "--nocolor",
+    parser.add_argument("-g", "--nocolor",
                         action="store_true", dest="noColor", default=False,
                         help="disable color output")
 
 # Custom logs formatter
 class LogFormatter(logging.Formatter):
     FORMATTERS = {
-        logging.CRITICAL: "!!!PIZDETS!!!: %(module)s.py_%(lineno)d: %(msg)s",
+        logging.CRITICAL: "!!!CRITICAL!!!: %(module)s.py_%(lineno)d: %(msg)s",
         logging.ERROR   : "ERROR: %(module)s.py_%(lineno)d: %(msg)s",
         logging.WARNING : "WARNING: %(module)s.py_%(lineno)d: %(msg)s",
         logging.DEBUG    : "DBG: %(module)s.py_%(lineno)d: %(msg)s",
@@ -92,7 +92,7 @@ def process_parsed_args(ParsedArgs):
 
     hdlr.setFormatter(fmt)
     logging.root.addHandler(hdlr)
-    
+
     if ParsedArgs.debug or ParsedArgs.onlyDebug:
         logging.root.setLevel(logging.DEBUG)
     else:
@@ -100,5 +100,8 @@ def process_parsed_args(ParsedArgs):
 
     return ParsedArgs.onlyDebug
 
-def addParentDirToSysPath(filePath):
+def add_parent_dir_to_sys_path(filePath):
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(filePath)), os.pardir)))
+
+def get_func_name() -> str:
+    return sys._getframe(1).f_code.co_name

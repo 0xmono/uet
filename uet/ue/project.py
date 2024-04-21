@@ -8,8 +8,8 @@ import ue
 
 ALL_TARGETS = ["Editor", "Game", "Client", "Server"]
 TARGET_BIULD_SUFFUX = {
-    "Editor": "Editor", 
-    "Game": "", 
+    "Editor": "Editor",
+    "Game": "",
     "Client": "Client",
     "Server": "Server"
 }
@@ -81,7 +81,7 @@ def update_plugins_by_project_file(projectFilePath, plugins):
         pluginDescr = projectFilePlugins[pluginName]
         if pluginInfo:
             pluginInfo['InProjectFile'] = True
-            
+
             if not pluginInfo['Enabled'] and pluginDescr['Enabled']:
                 pluginInfo['Enabled'] = True
                 logging.debug("Setting enabled plugin " + pluginName)
@@ -98,7 +98,7 @@ def get_engine_id(projectFilePath):
     with open(projectFilePath) as projectCfg:
         data = json.load(projectCfg)
         if 'EngineAssociation' in data:
-            return data['EngineAssociation']
+            return data['EngineAssociation'].lstrip("{").rstrip("}")
 
 def get_engine_root_path(projectFilePath):
     #return "e:/projects/Unreal/4_20"

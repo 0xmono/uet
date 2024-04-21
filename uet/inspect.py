@@ -28,7 +28,7 @@ class Inspector:
         parser.add_argument("shellsource",
                             help="directory inside of UE project or build, set by calling shell", metavar="SHELL_SOURCE")
         parser.add_argument("-s", "--source", dest="source",
-                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument", 
+                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument",
                             metavar="SOURCE")
         parser.add_argument("-p", "--plugins", dest="plugins", action="store_true", default=False,
                             help="list enabled plugins (for project)")

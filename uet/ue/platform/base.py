@@ -2,22 +2,22 @@ import os
 import logging
 import json
 import ue
+import common as cm
 
+# See in UE code:
+# FDesktopPlatformModule::EnumerateEngineInstallations()
+# FPlatformProcess::ApplicationSettingsDir()
 class UePlatformBase:
-    def get_application_settings_path(self):
-        logging.error("get_application_settings_path NOT IMPLEMENTED")
-        return ""
-    
-    def get_launcher_settings_path(self):
-        logging.error("get_launcher_settings_path NOT IMPLEMENTED")
+    def get_name(self) -> str:
+        logging.error(f"{cm.get_func_name()} NOT IMPLEMENTED")
         return ""
 
-    def get_launcher_installations_file_path(self):
-        logging.error("get_launcher_installations_file_path NOT IMPLEMENTED")
+    def get_launcher_installations_file_path(self) -> str:
+        logging.error(f"{cm.get_func_name()} is NOT IMPLEMENTED for platform `{self.get_name()}`")
         return ""
 
     def get_source_engine_installations(self):
-        logging.error("get_source_engine_installations NOT IMPLEMENTED")
+        logging.error(f"{cm.get_func_name()} is NOT IMPLEMENTED for platform `{self.get_name()}`")
         return {}
 
     def get_all_engine_installations(self):
@@ -30,24 +30,25 @@ class UePlatformBase:
     def read_launcher_installations(self):
         installations = {}
         filePath = os.path.normpath(self.get_launcher_installations_file_path())
-        logging.debug("File path: " + filePath)
+        logging.debug("self.get_launcher_installations_file_path(): " + self.get_launcher_installations_file_path())
+        logging.debug("File path: " + filePath + " of type " + type(filePath).__name__)
 
         with open(filePath) as fileContent:
             data = json.load(fileContent)
             if 'InstallationList' in data:
                 for installation in data['InstallationList']:
                     if installation['AppName'] and installation['InstallLocation']:
-                        installations[installation['AppName']] = os.path.normpath(installation['InstallLocation'])
+                        installations[installation['AppName'].upper().lstrip("{").rstrip("}")] = os.path.normpath(installation['InstallLocation'])
             else:
                 logging.info("No launcher installations found at " + filePath)
-        
+
         logging.debug("Launcher installations found: " + str(installations))
         return installations
 
     def get_launcher_engine_installations(self):
         engineInstallations = {}
         launcherInstallationList = self.read_launcher_installations()
-        
+
         for appName, installLocation in launcherInstallationList.items():
             if appName.startswith('UE_'):
                 if ue.path.engine.is_valid_root_path(installLocation):
@@ -63,4 +64,7 @@ class UePlatformBase:
         return False
 
     def get_relative_build_file_path(self):
-        raise NotImplementedError("Linux build is not implemented!")
+        raise NotImplementedError(f"Build is NOT IMPLEMENTED for platform `{self.get_name()}`!")
+
+    def get_default_build_platform(self):
+        raise NotImplementedError(f"Default build platform is NOT IMPLEMENTED for platform `{self.get_name()}`")
