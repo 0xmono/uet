@@ -8,7 +8,7 @@ class UeContextBase:
     def getName(self):
         raise NotImplementedError()
 
-    def inspect(self, settings):
+    def status(self, settings):
         raise NotImplementedError()
 
     def build(self, settings):

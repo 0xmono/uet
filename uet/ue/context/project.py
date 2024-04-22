@@ -20,11 +20,11 @@ class UeContextProject(UeContextBase):
         UeContextBase.__init__(self, inRootPath)
         self.projectName = ue.path.project.get_project_name_from_path(inRootPath)
         self.projectFilePath = ue.path.project.get_project_file_path(inRootPath)
-        
+
         if self.projectFilePath and os.path.isfile(self.projectFilePath):
             self.engineId = ue.project.get_engine_id(self.projectFilePath)
             logging.debug("Engine Id: " + str(self.engineId))
-            
+
             self.enginePath = ue.project.get_engine_root_path(self.projectFilePath)
             logging.debug("Engine Path: " + str(self.enginePath))
             self.contextEngine = None
@@ -35,9 +35,9 @@ class UeContextProject(UeContextBase):
     def getName(self):
         return "project"
 
-    def inspect(self, settings):
+    def status(self, settings):
         logging.info("Project Name: " + str(self.projectName))
-        
+
         logging.debug("ProjectFilePath: " + str(self.projectFilePath))
 
         if self.projectFilePath and os.path.isfile(self.projectFilePath):
@@ -45,7 +45,7 @@ class UeContextProject(UeContextBase):
             logging.info("Engine Path: " + str(self.enginePath))
 
             if self.contextEngine:
-                self.contextEngine.inspect(settings)
+                self.contextEngine.status(settings)
 
             buildTargets = ue.project.get_build_targets(self.rootPath)
             logging.info("Build targets: " + str(buildTargets))

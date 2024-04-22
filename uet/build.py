@@ -80,7 +80,7 @@ class ProjectBuilder:
                             help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument",
                             metavar="SOURCE")
         parser.add_argument("-t", "--target", dest="target", nargs='+', default = DEFAULT_TARGET,
-                            help="targets[s] to build. Use inspect script to find available targets. Use 'all' to build all available targets.",
+                            help="targets[s] to build. Use `status` script to find available targets. Use 'all' to build all available targets.",
                             metavar="TARGET")
         parser.add_argument("-c", "--config", dest="config", nargs='+', default = DEFAULT_CONFIG,
                             help=("configuration type from " + str(ue.project.ALL_CONFIGURATIONS)), metavar="CONFIG")

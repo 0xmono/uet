@@ -12,7 +12,7 @@ class Inspector:
     def run(self):
         sourcePath, settings = self.init()
         if sourcePath:
-            self.inspect(sourcePath, settings)
+            self.status(sourcePath, settings)
 
     def init(self):
         sourcePath, settings = self.process_args()
@@ -48,15 +48,15 @@ class Inspector:
 
         return parsedArgs.source, parsedArgs
 
-    def inspect(self, sourcePath, settings):
+    def status(self, sourcePath, settings):
         context = ue.context.get_context_interface(sourcePath)
         if context:
-            context.inspect(settings)
+            context.status(settings)
         else:
             logging.warning("No context found for the path " + str(sourcePath))
 
 def main():
-    print("Inspect Unreal Engine project/build")
+    print("Get status of Unreal Engine project/build")
     inspector = Inspector()
     inspector.run()
 

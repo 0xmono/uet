@@ -18,7 +18,7 @@ class UeContextBuild(UeContextBase):
     def getName(self):
         return "build"
 
-    def inspect(self, settings):
+    def status(self, settings):
         buildName = ue.path.build.get_name_from_path(buildRootPath)
         projectName, target = ue.project.split_build_name(buildName)
         logging.info("ProjectName: " + str(projectName))

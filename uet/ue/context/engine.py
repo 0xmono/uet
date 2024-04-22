@@ -24,7 +24,7 @@ class UeContextEngine(UeContextBase):
     def getName(self):
         return "engine"
 
-    def inspect(self, settings):
+    def status(self, settings):
         versionMajor, versionMinor, versionPatch = ue.path.get_version_from_root_dir(self.rootPath)
         engineVersion = str(versionMajor) + '.' + str(versionMinor) + '.' + str(versionPatch)
         logging.info("Engine version: " + str(engineVersion))

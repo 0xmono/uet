@@ -4,5 +4,5 @@ BASEDIR=$(dirname "$0")
 #echo "$BASEDIR"
 #echo "$PWD"
 
-#Inspect Unreal Engine project/build script
+#View logs for Unreal Engine script
 python3 "$BASEDIR/uet/view_logs.py" "$PWD" "$@"
