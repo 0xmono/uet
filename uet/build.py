@@ -18,6 +18,7 @@ NO_PCH_ARG = "-NoPCH"
 NO_SHARED_PCH_ARG = "-NoSharedPCH"
 
 def get_real_arg_values_list(argValue, allValue, dbgDescription):
+    valuesList = None
     if type(argValue) is list:
         if len(argValue) == 1 and argValue[0].lower() == "all":
             valuesList = allValue

@@ -13,7 +13,6 @@ def installPackage(package):
         from pip._internal import main as pipmain
         pipmain(['install', 'package-name'])
 
-
 def main():
     if platform.system() == 'Linux':
         pass

@@ -19,6 +19,8 @@ class UnrealInfo:
     def process_args(self):
         parser = ArgumentParser()
         cm.init_arg_parser(parser)
+        parser.add_argument("shellsource",
+            help="directory inside of UE project or build, set by calling shell", metavar="SHELL_SOURCE")
         parsedArgs = parser.parse_args()
         self.onlyDebug = cm.process_parsed_args(parsedArgs)
 
@@ -33,7 +35,7 @@ class UnrealInfo:
 
         launcherEngineInstallations = platformInterface.get_launcher_engine_installations()
         if not type(launcherEngineInstallations) is dict:
-            logging.error("Wrong launcher engine installations data:", str(get_launcher_engine_installations))
+            logging.error("Wrong launcher engine installations data:", str(launcherEngineInstallations))
             return
 
         if launcherEngineInstallations:
@@ -43,7 +45,7 @@ class UnrealInfo:
 
         sourceEngineInstallations = platformInterface.get_source_engine_installations()
         if not type(sourceEngineInstallations) is dict:
-            logging.error("Wrong source engine installations data:", str(get_source_engine_installations))
+            logging.error("Wrong source engine installations data:", str(sourceEngineInstallations))
             return
 
         if sourceEngineInstallations:
