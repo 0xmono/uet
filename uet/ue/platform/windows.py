@@ -15,6 +15,9 @@ EPIC_SETTINGS_PATH = "C:/ProgramData/Epic"
 RELATIVE_BUILD_FILE_PATH = "Engine/Build/BatchFiles/Build.bat"
 
 class UePlatformWindows(UePlatformBase):
+    def get_name(self):
+        return "Windows"
+
     def get_launcher_installations_file_path(self):
         return os.path.join(os.path.normpath(EPIC_SETTINGS_PATH), "UnrealEngineLauncher", "LauncherInstalled.dat")
 
@@ -62,3 +65,6 @@ class UePlatformWindows(UePlatformBase):
 
     def get_relative_build_file_path(self):
         return RELATIVE_BUILD_FILE_PATH
+
+    def get_default_build_platform(self):
+        return "Win64"
