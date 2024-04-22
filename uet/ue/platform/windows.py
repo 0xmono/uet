@@ -6,6 +6,9 @@ import win32api, win32con
 import ue
 from .base import UePlatformBase
 
+# Launcher config: `C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat`
+# Source config: in Windows registry, `HKEY_CURRENT_USER\SOFTWARE\Epic Games\Unreal Engine\Builds`
+
 INSTALLATION_SUB_KEY = "SOFTWARE\\Epic Games\\Unreal Engine\\Builds"
 EXE_EXTENSION = ".exe"
 EPIC_SETTINGS_PATH = "C:/ProgramData/Epic"

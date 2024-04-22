@@ -1,5 +1,8 @@
 from .unix import UePlatformUnix
 
+# Launcher config: no launcher on Linux for now
+# Source config: `~/Library/Application Support/Epic/UnrealEngine/Install.ini`
+
 EPIC_CONFIG_PATH = ".config/Epic"
 
 class UePlatformLinux(UePlatformUnix):

@@ -1,5 +1,8 @@
 from .unix import UePlatformUnix
 
+# Launcher config: `~/Library/Application Support/Epic/UnrealEngineLauncher/LauncherInstalled.dat`
+# Source config: `~/Library/Application Support/Epic/UnrealEngine/Install.ini`
+
 EPIC_CONFIG_PATH = "Library/Application Support/Epic"
 
 class UePlatformMac(UePlatformUnix):
