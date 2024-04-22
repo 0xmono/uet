@@ -1,2 +1,5 @@
 # Python binaries
 *.pyc
+
+# Mac
+.DS_Store
