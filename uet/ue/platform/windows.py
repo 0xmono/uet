@@ -42,7 +42,7 @@ class UePlatformWindows(UePlatformBase):
                                 logging.warning(installLocation + " is duplicated, name " + (name))
                             else:
                                 uniqueDirectories.append(installLocation)
-                                engineInstallations[name] = installLocation
+                                engineInstallations[name.upper().lstrip("{").rstrip("}")] = installLocation
                         else:
                             logging.warning(installLocation + " is not a valid engine root directory")
                 except Exception as e:

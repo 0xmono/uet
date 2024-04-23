@@ -98,7 +98,7 @@ def get_engine_id(projectFilePath):
     with open(projectFilePath) as projectCfg:
         data = json.load(projectCfg)
         if 'EngineAssociation' in data:
-            return data['EngineAssociation'].lstrip("{").rstrip("}")
+            return data['EngineAssociation'].upper().lstrip("{").rstrip("}")
 
 def get_engine_root_path(projectFilePath):
     #return "e:/projects/Unreal/4_20"
