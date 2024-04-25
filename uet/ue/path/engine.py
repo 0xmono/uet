@@ -36,7 +36,7 @@ def is_valid_root_path(somePath):
     hasBinariesDir = os.path.isdir(binariesDir)
     if not hasBinariesDir:
         logging.debug(somePath + " is not a valid engine root directory because " + binariesDir + " is absent")
-    
+
     buildDir = os.path.normpath(os.path.join(somePath, "Engine/Build"))
     hasBuildDir = os.path.isdir(buildDir)
     if not buildDir:
@@ -81,4 +81,4 @@ def get_relative_build_file_path():
     return platformInterface.get_relative_build_file_path()
 
 def get_logs_path(rootPath):
-    return os.path.join(rootPath, LOGS_PATH)
+    return os.path.join(rootPath, LOGS_DIR)

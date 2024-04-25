@@ -2,7 +2,7 @@ import os
 import logging
 from .common import *
 
-PLUGINS_PATH = "Plugins"
+PLUGINS_DIR = "Plugins"
 PLUGIN_FILE_EXTENSION = ".uplugin"
 
 def read_plugins_from_directory(parentDirPath, ebabledByDefault = False, source = None):
@@ -39,5 +39,5 @@ def is_valid_plugin_directory(pluginPath):
 
     if not isValidPluginDir:
         logging.debug(pluginPath + " is not a valid plugin directory " + contentDir + " " + sourceDir)
-    
+
     return isValidPluginDir

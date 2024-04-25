@@ -24,13 +24,13 @@ def get_log_path_from_dir(somePath):
     if projectRootPath:
         logging.debug("Found UE project root directory, using it '" + projectRootPath + "'")
         projectName = ue.path.get_project_name_from_path(projectRootPath)
-        logsPath = os.path.join(projectRootPath, ue.path.LOGS_PATH)
+        logsPath = os.path.join(projectRootPath, ue.path.project.get_logs_path(projectRootPath))
     else:
         buildRootPath = ue.path.build.get_root_path_from_path(somePath)
         if buildRootPath:
             logging.debug("Found UE build root directory, using it '" + buildRootPath + "'")
             projectName = ue.project.split_build_name(ue.path.build.build.get_name_from_path(buildRootPath))[0]
-            logsPath = os.path.join(buildRootPath, projectName, ue.path.LOGS_PATH)
+            logsPath = ue.path.build.get_logs_path(buildRootPath, projectName)
 
     if projectName is not None:
         logFileName = projectName + LOG_EXTENSION

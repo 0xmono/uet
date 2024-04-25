@@ -55,3 +55,6 @@ def get_project_target_files(projectPath):
 
 def get_plugins_path(rootPath):
     return os.path.join(rootPath, PLUGINS_DIR)
+
+def get_logs_path(rootPath):
+    return os.path.join(rootPath, LOGS_DIR)
