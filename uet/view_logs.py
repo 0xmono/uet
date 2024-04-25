@@ -8,7 +8,7 @@ import logging
 import common as cm
 import ue
 
-cm.addParentDirToSysPath(__file__)
+cm.add_parent_dir_to_sys_path(__file__)
 import config as cfg
 
 
@@ -103,7 +103,7 @@ def process_log_file(FilePath):
             content = apply_rule(pattern, repl, content, flags = flags)
     except AttributeError:
         logging.warning("Error when applying rules. Wrong ViewLogs.FILTER_RULES in config?")
-    
+
     return content
 
 def save_processed_log(processedLogContents, savePath):
@@ -155,7 +155,7 @@ class LogViewer:
         parser.add_argument("shellsource",
                             help="directory inside of UE project or build, set by calling shell script", metavar="SHELL_SOURCE")
         parser.add_argument("-s", "--source", dest="source",
-                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument", 
+                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument",
                             metavar="SOURCE")
 
         parsedArgs = parser.parse_args()

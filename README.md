@@ -1,5 +1,9 @@
 # Command line tools for Unreal Engine
 
+Alternatives:
+https://github.com/adamrehn/ue4cli
+https://github.com/kiwi-lang/uetools
+
 Welcome to the command line tools for Unreal Engine repo!
 
 This is command line utils that:
