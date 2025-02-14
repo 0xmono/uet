@@ -1,14 +1,11 @@
-import re
 import os
 import sys
-from time import gmtime, strftime
-import subprocess as sp
 from argparse import ArgumentParser
 import logging
 import common as cm
 import ue
 
-class Inspector:
+class Status:
     def run(self):
         sourcePath, settings = self.init()
         if sourcePath:
@@ -57,8 +54,8 @@ class Inspector:
 
 def main():
     print("Get status of Unreal Engine project/build")
-    inspector = Inspector()
-    inspector.run()
+    status = Status()
+    status.run()
 
 if __name__ == '__main__':
     try:
