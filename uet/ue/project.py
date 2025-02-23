@@ -5,6 +5,7 @@ import platform
 import json
 import copy
 import ue
+from typing import Optional, List, Dict, Tuple, Any
 
 ALL_TARGETS = ["Editor", "Game", "Client", "Server"]
 TARGET_BIULD_SUFFUX = {
@@ -18,13 +19,13 @@ ALL_CONFIGURATIONS = ["Debug", "Development", "Test", "Shipping"]
 ALL_PLATFORMS = ["Win64", "Linux", "Mac"]
 
 # Return [project name, target name] if possible, else None
-def split_build_name(buildName):
-    for taget, suffix in TARGET_BIULD_SUFFUX.items():
+def split_build_name(buildName: str) -> Optional[Tuple[str, str]]:
+    """Split build name into project name and target name."""
+    for target, suffix in TARGET_BIULD_SUFFUX.items():
         if buildName.lower().endswith(suffix.lower()):
-            projectName = buildName
-            if len(suffix):
-                projectName = buildName[:-len(suffix)]
-            return [projectName, taget]
+            projectName = buildName[:-len(suffix)] if suffix else buildName
+            return (projectName, target)
+    return None
 
 def get_target_from_build_name(buildName, projectName):
     suffix = buildName[len(projectName):]
@@ -53,23 +54,29 @@ def get_build_targets(projectPath):
         logging.debug("Target files: " + str(targetFiles))
         return [get_target_from_build_name(tf[:-len(ue.path.TARGET_FILE_ENDING)], projectName) for tf in targetFiles]
 
-def get_plugins(projectFilePath):
-    plugins = {}
-    if projectFilePath and os.path.isfile(projectFilePath):
+def get_plugins(projectFilePath: str) -> Dict[str, Dict[str, Any]]:
+    """Get plugins configuration from project file."""
+    plugins: Dict[str, Dict[str, Any]] = {}
+    
+    if not (projectFilePath and os.path.isfile(projectFilePath)):
+        return plugins
+        
+    try:
         with open(projectFilePath) as projectCfg:
             data = json.load(projectCfg)
-            if 'Plugins' in data:
-                for plugingData in data['Plugins']:
-                    if 'Name' in plugingData:
-                        pluginName = plugingData['Name']
-                        enabledInProjectFile = False
-                        if 'Enabled' in plugingData:
-                            if str(plugingData['Enabled']).lower() == 'true':
-                                enabledInProjectFile = True
-                            elif str(plugingData['Enabled']).lower() != 'false':
-                                logging.warning("Wrong status for plugin " + pluginName + " in " + projectFilePath)
-                        plugins[pluginName] = { 'Enabled' : enabledInProjectFile }
-                        logging.debug("Plugin " + pluginName + " enabled in project file: " + str(enabledInProjectFile))
+            for plugin_data in data.get('Plugins', []):
+                plugin_name = plugin_data.get('Name')
+                if plugin_name:
+                    pluginStatus = str(plugin_data.get('Enabled', '')).lower()
+                    enabled = pluginStatus == 'true'
+                    if pluginStatus != 'true' and pluginStatus != 'false':
+                        logging.warning(f"Invalid plugin status for {plugin_name}: {pluginStatus}")
+                    plugins[plugin_name] = {'Enabled': enabled}
+                    logging.debug(f"Plugin {plugin_name} enable status in project file: {enabled}")
+                
+    except (json.JSONDecodeError, IOError) as e:
+        logging.error(f"Failed to read project file {projectFilePath}: {e}")
+        
     return plugins
 
 

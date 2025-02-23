@@ -8,6 +8,7 @@ import logging
 import common as cm
 import ue
 from ue import platform as ue_pfm
+from build_config import BuildConfig
 
 DEFAULT_TARGET = "Editor"
 DEFAULT_CONFIG = "Development"
@@ -17,75 +18,58 @@ DISABLE_UNITY_BUILD_ARG = "-DisableUnity"
 NO_PCH_ARG = "-NoPCH"
 NO_SHARED_PCH_ARG = "-NoSharedPCH"
 
+class BuildError(Exception):
+    """Custom exception for build-related errors"""
+    pass
+
 def get_real_arg_values_list(argValue, allValue, dbgDescription):
+    """Convert argument value to list with validation"""
     valuesList = None
-    if type(argValue) is list:
-        if len(argValue) == 1 and argValue[0].lower() == "all":
+    
+    if isinstance(argValue, (list, str)):
+        values = [argValue] if isinstance(argValue, str) else argValue
+        if len(values) == 1 and values[0].lower() == "all":
             valuesList = allValue
         else:
-            valuesList = argValue
-    elif type(argValue) == str:
-        if argValue.lower() == "all":
-            valuesList = allValue
-        else:
-            valuesList = [argValue]
-
+            valuesList = values
+    
     if valuesList is None:
-        logging.error("Wrong type " + str(dbgDescription) + " arg type: " + str(type(argValue)) + " " + str(argValue))
-
+        error_msg = f"Wrong type {dbgDescription} arg type: {type(argValue)} {argValue}"
+        logging.error(error_msg)
+        raise BuildError(error_msg)
+        
     return valuesList
 
 
 class ProjectBuilder:
+    def __init__(self):
+        self.config = None
+
     def run(self):
-        initResult = self.init()
+        self.config = self.process_args()
+        if not self.config:
+            return
+            
+        initResult = self.init(self.config.source_path)
         if initResult:
-            buildFilePath, projectFilePath, targetArg, configArg, platformArg = initResult
-            self.run_build(buildFilePath, projectFilePath, targetArg, configArg, platformArg)
-
-    def init(self):
-        sourceArg, targetArg, configArg, platformArg = self.process_args()
-        logging.debug("Input SourcePath: " + str(sourceArg))
-        sourcePath = ue.path.project.get_root_path_from_path(sourceArg)
-        logging.debug("Actual SourcePath: " + str(sourcePath))
-
-        if os.path.isdir(sourcePath):
-            projectFilePath = ue.path.get_project_file_path(sourcePath)
-            logging.debug("ProjectFilePath: " + str(projectFilePath))
-            if projectFilePath and os.path.isfile(projectFilePath):
-                enginePath = ue.project.get_engine_root_path(projectFilePath)
-                logging.debug("EnginePath: " + str(enginePath))
-                if enginePath and os.path.isdir(enginePath):
-                    buildFilePath = os.path.normpath(os.path.join(enginePath, ue.path.get_relative_build_file_path()))
-                    logging.debug("BuildFilePath: " + str(buildFilePath))
-                    if buildFilePath and os.path.isfile(buildFilePath):
-                        return buildFilePath, projectFilePath, targetArg, configArg, platformArg
-                    else:
-                        logging.warning("BuildFilePath is invalid: " + str(buildFilePath))
-                else:
-                    logging.warning("EnginePath is invalid: " + str(enginePath))
-            else:
-                logging.warning("ProjectFilePath is invalid: " + str(projectFilePath))
-        else:
-            logging.warning("SourcePath is invalid: " + str(sourcePath))
+            buildFilePath, projectFilePath = initResult
+            self.run_build(buildFilePath, projectFilePath)
 
     def process_args(self):
-        defaultBuildPlatform = ue_pfm.get_current_platform_interface().get_default_build_platform()
-
         parser = ArgumentParser()
         cm.init_arg_parser(parser)
         parser.add_argument("shellsource",
                             help="directory inside of UE project or build, set by calling shell", metavar="SHELL_SOURCE")
         parser.add_argument("-s", "--source", dest="source",
-                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' aurgument",
+                            help="directory inside of UE project or build, set by user, overrides value of 'shellsource' argument",
                             metavar="SOURCE")
-        parser.add_argument("-t", "--target", dest="target", nargs='+', default = DEFAULT_TARGET,
+        parser.add_argument("-t", "--target", dest="target", nargs='+', default=DEFAULT_TARGET,
                             help="targets[s] to build. Use `status` script to find available targets. Use 'all' to build all available targets.",
                             metavar="TARGET")
-        parser.add_argument("-c", "--config", dest="config", nargs='+', default = DEFAULT_CONFIG,
-                            help=("configuration type from " + str(ue.project.ALL_CONFIGURATIONS)), metavar="CONFIG")
-        parser.add_argument("-p", "--platform", dest="platform", nargs='+', default = defaultBuildPlatform,
-                            help=("platform type from " + str(ue.project.ALL_PLATFORMS)), metavar="PLATFORM")
+        parser.add_argument("-c", "--config", dest="config", nargs='+', default=DEFAULT_CONFIG,
+                            help=f"configuration type from {ue.project.ALL_CONFIGURATIONS}", metavar="CONFIG")
+        parser.add_argument("-p", "--platform", dest="platform", nargs='+', default=DEFAULT_PLATFORM,
+                            help=f"platform type from {ue.project.ALL_PLATFORMS}", metavar="PLATFORM")
         parser.add_argument("-e", "--definitions", dest="definitions", nargs='+',
                             help="Definition for compiler.",
                             metavar="DEFINITIONS")
@@ -98,70 +82,99 @@ class ProjectBuilder:
 
         parsedArgs = parser.parse_args()
         self.onlyDebug = cm.process_parsed_args(parsedArgs)
-        self.nonUnity = parsedArgs.nonUnity
-        self.noPrecompiledHeaders = parsedArgs.noPrecompiledHeaders
-        self.definitions = parsedArgs.definitions
+        
+        return BuildConfig.from_args(parsedArgs)
 
-        logging.debug("Parsing arguments: '" + ' '.join(sys.argv[1:]) + "'")
-        logging.debug("Result is: " + str(parsedArgs))
+    def init(self, sourcePath):
+        logging.debug(f"Input SourcePath: {sourcePath}")
+        sourcePath = ue.path.project.get_root_path_from_path(sourcePath)
+        logging.debug(f"Actual SourcePath: {sourcePath}")
 
-        if not parsedArgs.source:
-            parsedArgs.source = parsedArgs.shellsource
+        if os.path.isdir(sourcePath):
+            projectFilePath = ue.path.get_project_file_path(sourcePath)
+            logging.debug(f"ProjectFilePath: {projectFilePath}")
+            if projectFilePath and os.path.isfile(projectFilePath):
+                enginePath = ue.project.get_engine_root_path(projectFilePath)
+                logging.debug(f"EnginePath: {enginePath}")
+                if enginePath and os.path.isdir(enginePath):
+                    buildFilePath = os.path.normpath(os.path.join(enginePath, ue.path.get_relative_build_file_path()))
+                    logging.debug(f"BuildFilePath: {buildFilePath}")
+                    if buildFilePath and os.path.isfile(buildFilePath):
+                        return buildFilePath, projectFilePath
+                    else:
+                        logging.warning(f"BuildFilePath is invalid: {buildFilePath}")
+                else:
+                    logging.warning(f"EnginePath is invalid: {enginePath}")
+            else:
+                logging.warning(f"ProjectFilePath is invalid: {projectFilePath}")
+        else:
+            logging.warning(f"SourcePath is invalid: {sourcePath}")
 
-        return parsedArgs.source, parsedArgs.target, parsedArgs.config, parsedArgs.platform
-
-    def get_target_arg(projectName, target):
-        targetArg = ue.project.create_build_name(projectName, target)
-        logging.debug("Target arg: " + str(targetArg))
-        return targetArg
-
-    def run_build(self, buildFilePath, projectFilePath, targetArg, configArg, platformArg):
-        logging.debug("Run build: " + str([buildFilePath, projectFilePath, targetArg, configArg, platformArg, self.onlyDebug]))
+    def run_build(self, buildFilePath, projectFilePath):
+        logging.debug(f"Run build: [{buildFilePath}, {projectFilePath}, {self.config}]")
         projectName = ue.path.get_project_name_from_project_file_path(projectFilePath)
         projectPath = os.path.dirname(projectFilePath)
 
-        targets = get_real_arg_values_list(targetArg, ue.project.get_build_targets(projectPath), "target")
+        targets = get_real_arg_values_list(self.config.target, ue.project.get_build_targets(projectPath), "target")
         if not targets:
             return
 
-        configurations = get_real_arg_values_list(configArg, ue.project.ALL_CONFIGURATIONS, "configuration")
+        configurations = get_real_arg_values_list(self.config.config, ue.project.ALL_CONFIGURATIONS, "configuration")
         if not configurations:
             return
 
-        platforms = get_real_arg_values_list(platformArg, ue.project.ALL_PLATFORMS, "platform")
+        platforms = get_real_arg_values_list(self.config.platform, ue.project.ALL_PLATFORMS, "platform")
         if not platforms:
             return
 
-        logging.info("\nBuild platforms: " + str(platforms))
-        logging.info("Build configurations: " + str(configurations))
-        logging.info("Build targets: " + str(targets) + "\n")
+        logging.info(f"\nBuild platforms: {platforms}")
+        logging.info(f"Build configurations: {configurations}")
+        logging.info(f"Build targets: {targets}\n")
 
         for platform in platforms:
-            logging.info("\n################################### Building " + platform + " platform ###################################\n")
+            logging.info(f"\n{'#'*35} Building {platform} platform {'#'*35}\n")
             for config in configurations:
                 for target in targets:
                     self.run_single_build(buildFilePath, projectFilePath, projectName, config, target, platform)
 
     def run_single_build(self, buildFilePath, projectFilePath, projectName, config, target, platform):
-        logging.info("\n----------------------------------- Building " + platform + "_" + config + "_" + target.capitalize() + " -----------------------------------\n")
-        buildTarget = ProjectBuilder.get_target_arg(projectName, target);
+        logging.info(f"\n{'='*35} Building {platform}_{config}_{target.capitalize()} {'='*35}\n")
+        buildTarget = self.get_target_arg(projectName, target)
 
         command = [buildFilePath, buildTarget, platform, config, projectFilePath]
 
-        if self.definitions:
-            command.append("-define:" + str(' '.join(self.definitions)))
+        if self.config.definitions:
+            command.append(f"-define:{' '.join(self.config.definitions)}")
 
-        if self.nonUnity:
+        if self.config.non_unity:
             command.append(DISABLE_UNITY_BUILD_ARG)
 
-        if self.noPrecompiledHeaders:
+        if self.config.no_precompiled_headers:
             command.append(NO_SHARED_PCH_ARG)
             command.append(NO_PCH_ARG)
 
-        logging.info("Runnig command: " + str(command))
-        if not self.onlyDebug:
-            p = sp.Popen(command)
-            stdout, stderr = p.communicate()
+        logging.info(f"Running command: {command}")
+        
+        if not self.config.debug_only:
+            try:
+                process = sp.Popen(command, stdout=sp.PIPE, stderr=sp.PIPE)
+                stdout, stderr = process.communicate()
+                
+                if process.returncode != 0:
+                    raise BuildError(f"Build failed with code {process.returncode}\n{stderr.decode()}")
+                    
+                if stdout:
+                    logging.info(stdout.decode())
+                if stderr:
+                    logging.error(stderr.decode())
+                    
+            except Exception as e:
+                raise BuildError(f"Build process failed: {e}")
+
+    def get_target_arg(self, projectName, target):
+        targetArg = ue.project.create_build_name(projectName, target)
+        logging.debug("Target arg: " + str(targetArg))
+        return targetArg
 
 def main():
     print("Build Unreal Engine project")
